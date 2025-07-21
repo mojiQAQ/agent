@@ -1,0 +1,193 @@
+{
+  "项目信息": {
+    "小说标题": "豪门老公他有读心术[穿书]",
+    "角色数量": 19,
+    "风格定位": "乙女动漫风格",
+    "创建时间": "2025-01-17",
+    "用途": "角色形象生成参考"
+  },
+  "角色外貌特征词库": {
+    "乔楚楚": {
+      "角色定位": "女主角 - 现代穿越女",
+      "基础设定": "22岁，芯片研究专家穿越者，理性专业但有些天真",
+      "外貌特征词": "full body shot, beautiful young woman, 22 years old, shoulder-length straight black hair with natural shine, clear intelligent brown eyes behind delicate features, fair porcelain skin, petite but elegant figure 165cm tall with well-proportioned curves, slender waist and graceful legs, gentle oval face with soft jawline, naturally arched eyebrows, small straight nose, soft pink lips, graceful long neck, slender arms and delicate wrists, long straight legs with feminine curves, elegant posture standing confidently, subtle natural makeup, dressed in complete modern casual or professional outfit from head to toe, clean and neat full-body appearance, youthful charm with intellectual elegance, expressive eyes that show curiosity and determination, standing pose showing full silhouette, 乙女动漫风格",
+      "服装搭配": "complete outfits: simple modern clothing, casual home wear with comfortable pants/skirts, professional business suits with blouses and skirts, student outfit with uniform or casual wear, soft pastel colored full outfits, comfortable shoes and accessories",
+      "表情特点": "thoughtful expression, gentle smile, curious gaze, occasional mischievous look when teasing, confident professional demeanor",
+      "关键视觉元素": "full body elegant silhouette, intelligent eyes, neat straight hair, complete modern clothing style, graceful standing posture, youthful beauty with mature intelligence"
+    },
+    "沈卿": {
+      "角色定位": "男主角 - 霸道总裁",
+      "基础设定": "成熟男性，具有读心术，深情腹黑，商业精英",
+      "外貌特征词": "full body shot, handsome mature man with impressive physique, sharp heroic features, deep penetrating dark eyes behind stylish metal-frame glasses, thick well-groomed eyebrows, strong masculine jawline, tall imposing figure 185cm with broad shoulders and athletic build, perfectly styled dark hair with subtle highlights, pale skin with healthy complexion, long elegant fingers, muscular arms and chest, long powerful legs, confident commanding stance, subtle smile that hints at hidden thoughts, dressed in complete expensive black business suits or elegant casual wear from head to toe, polished leather shoes, aristocratic bearing, mysterious charm, piercing gaze that seems to see through everything, refined gentleman full-body appearance, standing pose showing his dominant presence, 乙女动漫风格",
+      "服装搭配": "complete luxury outfits: black business suits with ties and dress shoes, high-end casual wear with pants and shirts, hospital patient clothes, sophisticated formal attire, dark color palette full outfits, expensive accessories and watches",
+      "表情特点": "subtle mysterious smile, intense focused gaze, gentle expression when looking at heroine, occasionally mischievous smirk, protective serious look",
+      "关键视觉元素": "imposing full body silhouette, metal-frame glasses, piercing dark eyes, sharp facial features, complete expensive suits, commanding standing presence, hidden tenderness"
+    },
+    "沈父": {
+      "角色定位": "男配角 - 慈父长辈",
+      "基础设定": "中年男性，军人出身，硬朗慈爱",
+      "外貌特征词": "full body shot, middle-aged distinguished man around 50, military bearing with straight upright posture, graying hair neatly combed, kind weathered face with laugh lines, strong robust build 180cm showing past military training with broad shoulders and solid frame, muscular arms and strong legs, warm brown eyes with paternal kindness, well-groomed mustache or clean-shaven, dressed in complete formal business attire or casual elegant clothing from head to toe, confident mature stance, approachable fatherly demeanor, healthy complexion, gentle smile when interacting with family, authoritative yet caring full-body presence, standing pose showing his protective nature, 乙女动漫风格",
+      "服装搭配": "complete outfits: formal business suits with dress shoes, casual elegant clothing with pants and shirts, traditional Chinese formal wear, comfortable home attire with full coverage",
+      "表情特点": "warm paternal smile, concerned parental look, proud expression, gentle authority",
+      "关键视觉元素": "military upright posture, graying hair, kind mature features, paternal warmth, distinguished full-body appearance, protective stance"
+    },
+    "沈母": {
+      "角色定位": "女配角 - 慈母长辈",
+      "基础设定": "中年女性，雍容慈爱，催生专家",
+      "外貌特征词": "full body shot, elegant middle-aged woman around 45, graceful refined features with maintained beauty, shoulder-length styled hair with subtle highlights, warm gentle eyes full of maternal love, smooth skin with minimal aging signs, slender graceful figure 168cm with elegant curves and proportions, long graceful legs, dressed in complete sophisticated elegant clothing from head to toe, tasteful jewelry and accessories, natural makeup enhancing her mature beauty, kind motherly smile, graceful standing posture with refined elegance, nurturing presence, soft spoken elegance, traditional feminine charm mixed with modern sophistication, full-body maternal grace, 乙女动漫风格",
+      "服装搭配": "complete elegant outfits: sophisticated dresses with matching shoes, traditional Chinese formal wear, tasteful casual elegance with full coordination, refined color palette clothing sets",
+      "表情特点": "warm maternal smile, concerned caring look, excited expression when discussing grandchildren, gentle encouraging gaze",
+      "关键视觉元素": "elegant mature beauty, refined full-body styling, maternal warmth, sophisticated fashion sense, graceful standing posture"
+    },
+    "玲玲": {
+      "角色定位": "女配角 - 忠诚保姆",
+      "基础设定": "二十出头农村姑娘，淳朴善良勤劳",
+      "外貌特征词": "full body shot, young woman early 20s, innocent rural beauty with natural charm, shoulder-length black hair often in simple ponytail, bright clear eyes showing honesty and kindness, healthy sun-kissed complexion, petite energetic build 160cm with natural proportions, slender waist and healthy legs, simple natural features with genuine smile, dressed in complete practical modest clothing or maid uniform from head to toe, minimal or no makeup highlighting natural beauty, hardworking hands and strong legs from daily work, cheerful optimistic expression, humble yet confident standing posture, pure innocent charm, approachable friendly demeanor, full-body representation of rural innocence, 乙女动漫风格",
+      "服装搭配": "complete outfits: simple maid uniform with full coverage, practical modest clothing sets, casual rural-style outfits with comfortable shoes, comfortable work attire",
+      "表情特点": "bright genuine smile, concerned caring expression, eager helpful look, innocent curiosity",
+      "关键视觉元素": "natural rural beauty, simple ponytail, honest clear eyes, complete modest practical clothing, innocent full-body charm"
+    },
+    "乔瑛瑛": {
+      "角色定位": "女反派 - 重生白莲花",
+      "基础设定": "乔家养女，内心阴暗，装纯真",
+      "外貌特征词": "full body shot, beautiful young woman with deceptive innocent appearance, delicate refined features that mask hidden darkness, long wavy hair styled perfectly, large expressive eyes that can show fake tears instantly, pale porcelain skin, slender graceful figure 166cm with elegant curves and long shapely legs, dressed in complete expensive elegant clothing from head to toe with perfect styling, subtle manipulation in her smile, calculated graceful gestures, sophisticated makeup that enhances her 'pure' image, hidden cunning behind beautiful facade, fake gentle demeanor, perfectly practiced innocent standing posture, sophisticated full-body appearance hiding her true nature, 乙女动漫风格",
+      "服装搭配": "complete expensive outfits: elegant dresses with matching accessories, sophisticated fashion sets, designer clothing with shoes and bags, carefully chosen color-coordinated outfits to enhance innocent image",
+      "表情特点": "fake innocent smile, calculated tears, hidden malicious glint in eyes, perfectly practiced sweet expressions",
+      "关键视觉元素": "deceptive beauty, perfect full-body styling, hidden darkness in eyes, complete elegant expensive clothing, fake innocent posture"
+    },
+    "林子源": {
+      "角色定位": "男配角 - 好友技术宅",
+      "基础设定": "沈卿好友，科创部总监，身材高大爽朗",
+      "外貌特征词": "full body shot, tall handsome man 182cm with casual charm, messy styled hair showing his laid-back personality, friendly bright eyes with technical intelligence, strong athletic build with broad shoulders and muscular frame, long powerful legs, casual confident posture, genuine warm smile, dressed in complete business casual or relaxed professional attire from head to toe, approachable brotherly demeanor, tech-savvy appearance with modern accessories, natural charisma, loyal friend energy, sometimes playful mischievous expression, confident yet humble standing presence, full-body representation of modern tech professional, 乙女动漫风格",
+      "服装搭配": "complete outfits: business casual attire with pants and shirts, relaxed professional clothing sets, casual tech-style outfits with comfortable shoes, comfortable modern fashion",
+      "表情特点": "warm friendly smile, mischievous grin, concerned loyal expression, confident casual demeanor",
+      "关键视觉元素": "tall athletic build, messy styled hair, friendly bright eyes, complete casual professional style, brotherly standing charm"
+    },
+    "应晴": {
+      "角色定位": "女配角 - 精明经纪人",
+      "基础设定": "前经纪人，精明能干，现实势利",
+      "外貌特征词": "full body shot, sharp professional woman in her late 20s, precisely styled short hair or elegant updo, keen intelligent eyes that assess everything, well-maintained appearance showing success, slender professional build 167cm with confident proportions and long legs in high heels, dressed in complete expensive business attire from head to toe, calculated confident standing posture, subtle expensive makeup, manicured appearance, ambitious energy, sophisticated urban charm, sometimes cold calculating expression, professional polish hiding ruthless ambition, full-body power dressing style, 乙女动漫风格",
+      "服装搭配": "complete expensive outfits: professional suits with blazers and skirts, high-end business attire sets, designer accessories with shoes and bags, polished urban fashion",
+      "表情特点": "calculating professional smile, shrewd assessing gaze, cold ambitious look, polished confident expression",
+      "关键视觉元素": "sharp professional features, complete expensive business attire, calculating eyes, polished sophisticated full-body appearance"
+    },
+    "何老": {
+      "角色定位": "男配角 - 资深教授",
+      "基础设定": "约50岁资深教授，严谨公正，学者风范",
+      "外貌特征词": "full body shot, distinguished professor around 50, graying hair showing wisdom and experience, kind yet sharp eyes behind reading glasses, weathered face with intellectual charm, medium build 175cm with scholarly posture and gentle frame, dressed in complete conservative academic attire from head to toe, gentle yet authoritative presence, warm paternal smile when teaching, serious expression during evaluations, traditional scholarly appearance, humble confidence, approachable academic demeanor, full-body representation of wisdom and authority, 乙女动漫风格",
+      "服装搭配": "complete academic outfits: conservative academic clothing with vests and pants, traditional professor attire, simple formal wear with comfortable shoes, scholarly accessories like reading glasses",
+      "表情特点": "kind scholarly smile, serious evaluating expression, warm teaching demeanor, gentle authority",
+      "关键视觉元素": "graying hair, reading glasses, scholarly standing posture, complete traditional academic clothing, wise kind full-body features"
+    },
+    "李欣": {
+      "角色定位": "女配角 - 活泼研究生",
+      "基础设定": "A大研究生，梳马尾辫，性格活泼八卦",
+      "外貌特征词": "full body shot, energetic young woman graduate student, long black hair in high ponytail showing her active personality, bright curious eyes full of enthusiasm, youthful fresh features, petite energetic build 162cm with youthful proportions and agile legs, dressed in complete casual student clothing from head to toe, natural minimal makeup, expressive animated features, gossipy excited expressions, approachable friendly demeanor, innocent student charm, sometimes star-struck expression when seeing handsome men, vibrant youthful energy, full-body student vitality, 乙女动漫风格",
+      "服装搭配": "complete student outfits: casual student clothing with jeans/skirts and sneakers, comfortable campus fashion, youthful trendy outfits with backpacks, practical student accessories",
+      "表情特点": "excited gossipy expression, star-struck admiration, animated curious look, friendly enthusiastic smile",
+      "关键视觉元素": "high ponytail, bright curious eyes, complete youthful student appearance, animated expressions, energetic full-body demeanor"
+    },
+    "常可如": {
+      "角色定位": "女配角 - 开朗研究生",
+      "基础设定": "A大研究生，圆脸，性格开朗直率",
+      "外貌特征词": "full body shot, cheerful young woman with round cute face, short to medium length hair framing her round features, bright innocent eyes showing her straightforward nature, healthy rosy cheeks, petite round build 158cm giving her adorable appearance with cute proportions and short legs, dressed in complete comfortable casual student attire from head to toe, natural fresh-faced beauty, genuine sweet smile, expressive round eyes, approachable girl-next-door charm, sometimes naive excited expressions, pure innocent student energy, full-body cute and innocent appearance, 乙女动漫风格",
+      "服装搭配": "complete cute outfits: casual student clothing with cute designs, comfortable campus fashion, sweet innocent style with soft colors, matching accessories and shoes",
+      "表情特点": "genuine sweet smile, naive excited expression, innocent curiosity, cheerful open demeanor",
+      "关键视觉元素": "round cute face, bright innocent eyes, adorable petite full-body build, natural fresh beauty, sweet innocent standing charm"
+    },
+    "姚佩佩": {
+      "角色定位": "女配角 - 白富美室友",
+      "基础设定": "夏令营室友，白富美，说话带老上海小调，热情开朗",
+      "外貌特征词": "full body shot, elegant young woman with privileged background, sophisticated styled hair showing her wealthy upbringing, refined beautiful features with natural grace, fair porcelain skin, slender elegant build 165cm with refined proportions and graceful long legs, dressed in complete expensive fashionable clothing from head to toe, subtle luxury accessories, polished appearance showing good breeding, warm genuine smile despite privileged background, confident yet approachable standing demeanor, sophisticated beauty with down-to-earth personality, sometimes excited foodie expressions, charming wealthy girl charm, full-body elegance with approachable warmth, 乙女动漫风格",
+      "服装搭配": "complete luxury outfits: expensive fashionable clothing sets, luxury casual wear with designer pieces, sophisticated student fashion with premium accessories, designer shoes and bags",
+      "表情特点": "warm genuine smile, excited foodie expression, elegant confident look, charming sophisticated demeanor",
+      "关键视觉元素": "sophisticated full-body styling, refined elegant features, complete expensive fashionable clothing, wealthy girl charm, warm standing personality"
+    },
+    "谢廉之": {
+      "角色定位": "男配角 - 憨厚博士",
+      "基础设定": "28岁博士毕业生，A大出身，性格憨厚文雅",
+      "外貌特征词": "full body shot, gentle scholarly man age 28, soft refined features showing his academic background, neat conservative hairstyle, kind intelligent eyes behind subtle glasses, pale scholarly complexion, tall lean build 178cm with slightly stooped scholarly posture and long legs, dressed in complete conservative academic attire from head to toe, gentle modest demeanor, sometimes awkward innocent expressions, classic handsome features with scholarly charm, humble confident presence, traditional gentleman appearance, full-body representation of academic gentleness, 乙女动漫风格",
+      "服装搭配": "complete academic outfits: conservative academic clothing with cardigans and pants, traditional scholarly attire, simple formal wear with comfortable shoes, classic gentleman style",
+      "表情特点": "gentle modest smile, awkward innocent expression, scholarly concentration, kind humble demeanor",
+      "关键视觉元素": "soft scholarly features, complete conservative styling, gentle academic full-body appearance, modest gentleman standing charm"
+    },
+    "王泽": {
+      "角色定位": "男配角 - 活泼室友",
+      "基础设定": "谢廉之室友，性格活泼油嘴滑舌",
+      "外貌特征词": "full body shot, energetic young man with playful charm, trendy styled hair showing his outgoing personality, bright mischievous eyes full of humor, handsome features with boyish charm, athletic medium build 176cm with youthful proportions and energetic legs, dressed in complete casual trendy clothing from head to toe, confident playful standing posture, genuine friendly smile, sometimes cheeky expressions, approachable buddy-type charm, natural charisma, youthful energy with mature wisdom, modern casual handsome full-body appearance, 乙女动漫风格",
+      "服装搭配": "complete trendy outfits: casual trendy clothing with fashionable pants and shirts, modern young man fashion, comfortable stylish outfits with sneakers, contemporary accessories",
+      "表情特点": "cheeky playful smile, mischievous grin, friendly energetic expression, confident casual demeanor",
+      "关键视觉元素": "trendy styled hair, mischievous bright eyes, complete casual modern fashion, playful energetic charm, boyish handsome full-body features"
+    },
+    "黎韵哲": {
+      "角色定位": "男配角 - 神秘魅力型",
+      "基础设定": "神秘人物，与楚楚有特殊关系，斯文败类型",
+      "外貌特征词": "full body shot, mysterious handsome man with dangerous charm, shoulder-length black hair elegantly tied back showing his refined yet dangerous nature, deep penetrating eyes with hidden secrets, refined handsome features with subtle danger, tall elegant build 180cm with graceful proportions and long powerful legs, dressed in complete exquisite sophisticated attire from head to toe, subtle mysterious smile hiding his true intentions, graceful confident standing posture, aristocratic bearing with hidden threats, cultured dangerous elegance, sometimes gentle trap expressions, refined gentleman facade concealing dark motives, full-body sophisticated mysterious appearance, 乙女动漫风格",
+      "服装搭配": "complete exquisite outfits: sophisticated formal wear with elegant suits, refined casual luxury attire, mysterious dark clothing sets, elegant accessories showing his refined taste",
+      "表情特点": "subtle mysterious smile, gentle trap expression, dangerous hidden glint in eyes, refined cultured demeanor",
+      "关键视觉元素": "shoulder-length tied hair, deep mysterious eyes, complete sophisticated styling, dangerous elegant charm, refined mysterious full-body presence"
+    },
+    "营长": {
+      "角色定位": "男配角 - 职场精英型",
+      "基础设定": "A大夏令营负责人，人精性格，察言观色",
+      "外貌特征词": "full body shot, middle-aged professional man with sharp instincts, neatly styled hair showing his attention to detail, keen intelligent eyes that assess situations quickly, mature stable features, sturdy professional build 175cm with confident proportions and steady legs, dressed in complete professional work attire from head to toe, authoritative yet approachable standing posture, subtle calculating expressions, experienced workplace demeanor, sometimes nervous when facing superiors, practical professional appearance, commanding presence with adaptability, full-body representation of workplace wisdom, 乙女动漫风格",
+      "服装搭配": "complete professional outfits: formal work attire with suits and ties, camp director uniforms, business casual clothing sets, practical professional accessories",
+      "表情特点": "calculating professional smile, nervous respectful expression when facing authority, authoritative confident look, shrewd assessing gaze",
+      "关键视觉元素": "keen intelligent eyes, complete professional styling, authoritative yet adaptable full-body stance, workplace wisdom appearance"
+    },
+    "实验室同事": {
+      "角色定位": "群体配角 - 背景群像型",
+      "基础设定": "A大夏令营实验室成员，各种年龄段的研究人员",
+      "外貌特征词": "full body shot, diverse group of laboratory researchers of various ages, neat professional appearance showing their academic background, mix of young and middle-aged faces with intelligent features, various heights and builds representing different backgrounds, dressed in complete laboratory work attire from head to toe, professional standing postures showing their expertise, sometimes excited expressions when witnessing gossip, collective reaction patterns, approachable academic demeanor, group dynamics showing camaraderie, full-body representation of academic community, 乙女动漫风格",
+      "服装搭配": "complete laboratory outfits: professional lab coats with underlying business casual, academic work attire, practical research clothing sets, comfortable professional shoes",
+      "表情特点": "excited gossipy expressions, professional focused looks, collective amazed reactions, enthusiastic learning expressions",
+      "关键视觉元素": "diverse academic features, complete laboratory professional styling, group dynamic full-body interactions, academic community appearance"
+    },
+    "侍者": {
+      "角色定位": "服务人员 - 功能性配角",
+      "基础设定": "会所服务员，专业恭敬，服务周到",
+      "外貌特征词": "full body shot, professional service staff member with polished appearance, neatly styled hair showing attention to presentation, respectful professional eyes, clean well-maintained features, medium professional build 170cm with proper service posture and steady legs, dressed in complete immaculate service uniform from head to toe, respectful standing posture with hands positioned for service, subtle professional smile, attentive service expressions, polished professional demeanor, sometimes focused concentration during service, refined service industry appearance, full-body representation of hospitality excellence, 乙女动漫风格",
+      "服装搭配": "complete service uniforms: immaculate hotel/restaurant uniforms, professional service attire with proper accessories, polished service shoes and neat styling",
+      "表情特点": "respectful professional smile, attentive service expression, focused concentration during tasks, polished courteous demeanor",
+      "关键视觉元素": "neat professional appearance, complete service uniform styling, respectful service full-body posture, hospitality excellence presence"
+    },
+    "沈家佣人": {
+      "角色定位": "服务人员 - 功能性配角",
+      "基础设定": "沈家佣人，恭敬专业，忠诚服务",
+      "外貌特征词": "full body shot, loyal household staff member with devoted appearance, neatly groomed hair showing respect for employers, trustworthy honest eyes, mature reliable features, medium build 165cm with humble yet dignified posture and steady legs, dressed in complete pristine household uniform from head to toe, respectful standing posture with hands ready for service, genuine loyal smile, devoted service expressions, humble professional demeanor, sometimes concerned caring looks for family welfare, traditional household service appearance, full-body representation of faithful service, 乙女动漫风格",
+      "服装搭配": "complete household uniforms: pristine maid/butler uniforms, traditional household service attire, comfortable service shoes and neat accessories",
+      "表情特点": "genuine loyal smile, devoted service expression, concerned caring look for family, humble respectful demeanor",
+      "关键视觉元素": "trustworthy honest features, complete household uniform styling, humble dignified full-body stance, faithful service presence"
+    },
+    "夏令营众人": {
+      "角色定位": "群体配角 - 背景群像型",
+      "基础设定": "A大夏令营学员，各种年龄段，集体情绪变化",
+      "外貌特征词": "full body shot, diverse group of summer camp participants of various ages, youthful energetic faces showing academic enthusiasm, mix of student features with bright curious eyes, various heights and builds representing different backgrounds, dressed in complete casual campus attire from head to toe, group standing positions showing collective dynamics, sometimes excited gossipy expressions, collective emotional reactions, approachable student community atmosphere, group interactions showing camaraderie and competition, full-body representation of academic youth energy, 乙女动漫风格",
+      "服装搭配": "complete campus outfits: casual student clothing with jeans and t-shirts, comfortable campus fashion, athletic wear for activities, practical student accessories and backpacks",
+      "表情特点": "excited gossipy expressions, collective amazed reactions, enthusiastic learning looks, competitive academic energy",
+      "关键视觉元素": "diverse youthful features, complete casual campus styling, group dynamic full-body interactions, academic youth community appearance"
+    }
+  },
+  "通用乙女动漫风格要素": {
+    "色彩特点": "soft pastel colors, warm romantic tones, gentle lighting effects, dreamy atmosphere",
+    "绘画风格": "clean anime line art, detailed facial features, expressive large eyes, soft shading, romantic composition",
+    "质感要求": "smooth skin texture, shiny hair effects, detailed clothing fabric, soft romantic lighting",
+    "构图建议": "full body portrait shots, complete character silhouette, standing poses showing entire figure, full-body romantic angles, character-focused full composition"
+  },
+  "使用说明": {
+    "生成建议": [
+      "每个角色的特征词已包含完整的全身外貌描述",
+      "建议配合通用乙女动漫风格要素使用",
+      "可根据具体场景需求调整服装搭配",
+      "表情特点可用于生成不同情境下的角色形象",
+      "所有描述都针对全身照优化，包含身材比例和姿态"
+    ],
+    "注意事项": [
+      "保持角色特征的一致性",
+      "注意年龄差异在全身的体现",
+      "突出每个角色的个性特点和身材特征",
+      "确保符合乙女动漫的审美标准",
+      "重点展现全身比例和整体形象"
+    ]
+  }
+} 

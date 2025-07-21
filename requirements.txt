@@ -1,0 +1,51 @@
+# 项目核心依赖包
+
+# 基础库（Python内置，无需安装）
+# - os, json, time, hashlib, hmac, base64, datetime, pathlib, logging, sys, re
+
+# 图像处理
+Pillow>=9.0.0              # 图像处理库
+numpy>=1.21.0              # 数值计算
+
+# 配置和数据处理
+PyYAML>=6.0                # YAML配置文件解析
+
+# HTTP请求处理
+requests>=2.28.0           # HTTP请求库
+urllib3>=1.26.0            # HTTP库的底层支持
+
+# 火山引擎SDK
+volcengine-python-sdk>=4.0.0  # 火山引擎Python SDK
+
+# 腾讯云SDK
+tencentcloud-sdk-python>=3.0.0  # 腾讯云Python SDK
+
+# 视频处理
+moviepy>=2.0.0             # 视频剪辑和处理
+imageio-ffmpeg>=0.4.0      # moviepy的ffmpeg支持
+
+# 图像分析和机器学习
+scikit-learn>=1.0.0        # 机器学习工具（用于颜色分析）
+
+# 进度显示
+tqdm>=4.64.0               # 进度条显示
+
+# 开发和测试（可选）
+pytest>=7.0.0             # 测试框架
+pytest-asyncio>=0.20.0    # 异步测试支持
+black>=22.0.0              # 代码格式化
+flake8>=4.0.0              # 代码检查
+mypy>=0.950                # 类型检查
+
+# 性能优化（可选）
+psutil>=5.9.0              # 系统资源监控
+
+# 日志和监控（可选）
+colorlog>=6.7.0            # 彩色日志输出
+
+# 安全相关（可选）
+python-dotenv>=0.21.0      # 环境变量管理
+
+# 文档生成（开发时使用，可选）
+mkdocs>=1.4.0              # 文档生成
+mkdocs-material>=8.5.0     # 文档主题 
