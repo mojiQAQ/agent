@@ -38,8 +38,8 @@ def update_processed_with_image_prompt(processed_path, image_path, output_path=N
 
 if __name__ == "__main__":
     update_processed_with_image_prompt(
-        'chapters/processed/chapter_001_processed.json',
-        'chapters/processed/chapter_001_image.json'
+        'chapters/processed/chapter_003_processed.json',
+        'chapters/processed/chapter_003_image.json'
     )
     # update_processed_with_image_prompt('chapters/processed/chapter_002_processed.json', 'chapters/processed/chapter_002_image.json')
     # update_processed_with_image_prompt('chapters/processed/chapter_003_processed.json', 'chapters/processed/chapter_003_image.json')
