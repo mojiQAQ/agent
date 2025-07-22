@@ -209,6 +209,54 @@ class VolcengineImg2ImgOfficial:
             logger.error(f"图生图任务提交失败: {e}")
             raise VolcengineImg2ImgError(f"图生图任务提交失败: {e}")
     
+    def prompt_to_image(self, 
+                      prompt: str = "高质量人像写真",
+                      scale: int = 8,
+                      width: int = 1920,
+                      height: int = 1080,
+                      seed: int = -1) -> Dict[str, Any]:
+        """
+        执行图生图转换（异步模式）
+        
+        Args:
+            prompt: 提示词描述
+            scale: 影响文本描述的程度
+            height: 输出图像高度
+            seed: 随机种子，-1表示随机
+            
+        Returns:
+            任务提交结果，包含task_id
+        """
+        # 构建请求参数
+        form = {
+            "req_key": "high_aes_general_v30l_zt2i",
+            "prompt": prompt,
+            "scale": scale,
+            "width": width,
+            "height": height,
+            "seed": seed,
+            "return_url": True,
+        }
+        
+        try:
+            if OFFICIAL_SDK_AVAILABLE and self.visual_service:
+                # 使用官方SDK提交异步任务
+                logger.info("使用官方SDK提交图生图任务")
+                logger.info(f"提交参数: {form}")
+                result = self.visual_service.cv_sync2async_submit_task(form)
+                logger.info(f"SDK返回结果: {result}")
+            else:
+                # 使用备用实现
+                logger.info("使用备用实现提交图生图任务")
+                result = self._fallback_request(form)
+            
+            logger.info(f"任务提交成功: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"图生图任务提交失败: {e}")
+            raise VolcengineImg2ImgError(f"图生图任务提交失败: {e}")
+    
     def get_task_result(self, task_id: str, max_wait_time: int = 300) -> Dict[str, Any]:
         """
         获取异步任务结果
@@ -379,6 +427,66 @@ def generate_image_from_url(image_url: str,
         logger.error(f"图生图处理失败: {e}")
         raise
 
+def generate_image_from_prompt(
+                          output_path: str,
+                          access_key_id: str,
+                          secret_access_key: str,
+                          prompt: str = "高质量人像写真",
+                          **kwargs) -> str:
+    """
+    从图片URL生成新图片并保存到本地的便捷函数
+    
+    Args:
+        image_url: 输入图片URL
+        output_path: 输出文件路径
+        access_key_id: 火山引擎访问密钥ID
+        secret_access_key: 火山引擎访问密钥
+        prompt: 生成提示词
+        **kwargs: 其他参数
+        
+    Returns:
+        保存的文件路径
+    """
+    try:
+        print(f"output_path: {output_path}")
+        print(f"access_key_id: {access_key_id}")
+        print(f"secret_access_key: {secret_access_key}")
+        print(f"prompt: {prompt}")
+        print(f"kwargs: {kwargs}")
+
+        # 创建客户端
+        client = VolcengineImg2ImgOfficial(access_key_id, secret_access_key)
+        
+        # 提交任务
+        logger.info("提交图生图任务...")
+        submit_result = client.prompt_to_image(
+            prompt=prompt,
+            **kwargs
+        )
+        
+        # 提取task_id
+        task_id = None
+        if "data" in submit_result and "task_id" in submit_result["data"]:
+            task_id = submit_result["data"]["task_id"]
+        elif "task_id" in submit_result:
+            task_id = submit_result["task_id"]
+        
+        if not task_id:
+            raise VolcengineImg2ImgError("提交任务成功但未获取到task_id")
+        
+        logger.info(f"任务ID: {task_id}")
+        
+        # 等待任务完成
+        logger.info("等待任务完成...")
+        final_result = client.get_task_result(task_id)
+        
+        # 保存结果
+        saved_path = client.save_result(final_result, output_path)
+        return saved_path
+        
+    except Exception as e:
+        logger.error(f"图生图处理失败: {e}")
+        raise
 
 # 示例使用
 if __name__ == "__main__":

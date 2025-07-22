@@ -3,7 +3,7 @@ import json
 import random
 from pathlib import Path
 from modules.audio import AudioGenerator
-from modules.volcengine_img2img_official import VolcengineImg2ImgOfficial, generate_image_from_url
+from modules.volcengine_img2img_official import VolcengineImg2ImgOfficial, generate_image_from_prompt, generate_image_from_url
 from modules.config import get_config
 import subprocess
 import shlex
@@ -629,9 +629,8 @@ def process_chapter(chapter_json_path, output_base="output"):
     with open(chapter_json_path, "r", encoding="utf-8") as f:
         chapter_data = json.load(f)
     chapter_info = chapter_data["章节信息"]
-    chapter_range = chapter_info["章节范围"]  # 如"第4-8章"
     scene_breakdown = chapter_data["场景拆解"]
-    
+
     config = get_config()
     volc_cred = config.get("volcengine")["credentials"]
     volc_params = config.get("volcengine")["image_to_image"]["default_params"]
@@ -641,295 +640,221 @@ def process_chapter(chapter_json_path, output_base="output"):
         secret_access_key=volc_cred["secret_access_key"],
         region=volc_cred.get("region", "cn-north-1")
     )
-    
-    # 按章节分组段落
-    chapters_dict = {}
-    for para in scene_breakdown:
-        chapter_key = para["章节"]  # 如"第4章"
-        if chapter_key not in chapters_dict:
-            chapters_dict[chapter_key] = []
-        chapters_dict[chapter_key].append(para)
-    
-    print(f"检测到 {len(chapters_dict)} 个章节: {list(chapters_dict.keys())}")
-    
-    all_results = []
-    all_chapter_videos = []  # 存储所有章节视频路径
-    
-    # 处理每个章节
-    for chapter_key, chapter_paragraphs in chapters_dict.items():
-        # 为每个章节创建目录
-        match = re.match(r"第(\d+)章", chapter_key)
-        if match:
-            chapter_num = match.group(1)
-            # 从标题集合中找到对应的标题
-            chapter_titles = chapter_info.get("标题集合", [])
-            chapter_title = None
-            for title in chapter_titles:
-                if f"第{chapter_num}章" in title:
-                    # 提取标题部分（去掉"第X章："前缀）
-                    title_match = re.match(r"第\d+章[:：]?(.*)", title)
-                    if title_match:
-                        chapter_title = title_match.group(1).strip()
-                    break
-            
-            if chapter_title:
-                chapter_folder = f"{chapter_num}-{chapter_title}"
-            else:
-                chapter_folder = f"{chapter_num}章"
-        else:
-            chapter_folder = chapter_key.replace(":", "-").replace("：", "-")
-        
-        chapter_output_dir = Path(output_base) / chapter_folder
-        progress_path = chapter_output_dir / ".progress.json"
-        progress = load_progress(progress_path)
-        paragraph_videos = []  # 存储本章节段落视频路径
-        paragraph_subtitles = []  # 存储本章节段落字幕路径
-        
-        print(f"\n{'='*60}")
-        print(f"开始处理 {chapter_key}: {chapter_folder}")
-        print(f"包含 {len(chapter_paragraphs)} 个段落")
-        print(f"{'='*60}")
 
-        # 处理本章节的每个段落
-        for para in chapter_paragraphs:
-            para_title = para["段落标题"]
-            para_num = para["序号"]
-            para_dir = chapter_output_dir / f"{para_num}-{para_title}"
-            para_dir.mkdir(parents=True, exist_ok=True)
-            para_key = f"{chapter_key}-{para_title}"  # 使用章节+段落作为进度键
-            para_progress = progress.get(para_key, {})
+    # 章节目录名
+    chapter_num = chapter_info["章节号"].replace("第", "").replace("章", "")
+    chapter_title = chapter_info.get("标题", "")
+    chapter_folder = f"{chapter_num}-{chapter_title}" if chapter_title else f"{chapter_num}章"
+    chapter_output_dir = Path(output_base) / chapter_folder
+    progress_path = chapter_output_dir / ".progress.json"
+    progress = load_progress(progress_path)
+    paragraph_videos = []
+    paragraph_subtitles = []
 
-            print(f"\n处理段落: {chapter_key} - {para_title}")
-            
-            # 2. 检查并生成段落音频
-            audio_path = para_dir / "audio.wav"
-            if audio_path.exists() and audio_path.stat().st_size > 0:
-                print(f"音频文件已存在且有效: {audio_path}")
-                audio_file = str(audio_path)
-            else:
-                print(f"生成音频文件: {audio_path}")
-                try:
-                    audio_file = audio_gen.generate(
-                        text=para["第三人称描述"],
-                        type="paragraph",
-                        language="zh",
-                        output_path=str(audio_path)
-                    )
-                    para_progress["audio_done"] = True
-                    save_progress(progress_path, progress)
-                except Exception as e:
-                    print(f"音频生成失败: {para_title}，错误: {e}")
-                    save_progress(progress_path, progress)
-                    break
-
-            # 3. 检查并生成场景图片和字幕
-            scene_files = []
-            scene_subtitles = []
-            missing_scenes = []
-            
-            # 计算每个场景的时长
-            scene_count = len(para["场景列表"])
-            total_duration = get_audio_duration(str(audio_path)) if Path(audio_path).exists() else 0
-            scene_duration = total_duration / scene_count if scene_count > 0 else 10.0
-            
-            for i, scene in enumerate(para["场景列表"]):
-                scene_id = scene["场景编号"]
-                img_path = para_dir / f"scene_{scene_id}.jpg"
-                scene_subtitle_path = para_dir / f"scene_{scene_id}_subtitle.srt"
-                
-                # 生成场景字幕
-                if not scene_subtitle_path.exists():
-                    scene_start_time = i * scene_duration
-                    print(f"生成场景字幕: scene_{scene_id}")
-                    create_srt_subtitle(
-                        text=para["第三人称描述"],  # 使用段落描述作为场景字幕
-                        start_time=scene_start_time,
-                        duration=scene_duration,
-                        output_path=str(scene_subtitle_path)
-                    )
-                else:
-                    print(f"场景字幕已存在: scene_{scene_id}")
-                
-                scene_subtitles.append(str(scene_subtitle_path))
-                
-                if img_path.exists() and img_path.stat().st_size > 0:
-                    print(f"场景图片已存在且有效: scene_{scene_id}.jpg")
-                    scene_files.append(str(img_path))
-                else:
-                    missing_scenes.append((scene, img_path))
-
-            # 生成缺失的场景图片
-            for scene, img_path in missing_scenes:
-                print(f"生成缺失的场景图片: scene_{scene['场景编号']}.jpg")
-                try:
-                    image_url = scene.get("主角图片url")
-                    if not image_url:
-                        image_url = f"http://zhuluoji.cn-sh2.ufileos.com/test/{scene['主角']}.jpeg"
-                    
-                    generate_image_from_url(
-                        image_url=image_url,
-                        output_path=str(img_path),
-                        access_key_id=volc_cred["access_key_id"],
-                        secret_access_key=volc_cred["secret_access_key"],
-                        prompt=scene["图片提示词"],
-                    )
-                    scene_files.append(str(img_path))
-                    para_progress["scene_files"] = scene_files
-                    progress[para_key] = para_progress
-                    save_progress(progress_path, progress)
-                except Exception as e:
-                    print(f"图片生成失败: scene_{scene['场景编号']}.jpg，错误: {e}")
-                    save_progress(progress_path, progress)
-                    return all_results  # 断点退出
-
-            # 4. 生成段落字幕文件
-            paragraph_subtitle_path = para_dir / "paragraph_subtitle.srt"
-            audio_duration = get_audio_duration(str(audio_path))
-            
-            if not paragraph_subtitle_path.exists():
-                print(f"生成段落字幕: {para_title}")
-                create_srt_subtitle(
-                    text=para["第三人称描述"],
-                    start_time=0,
-                    duration=audio_duration,
-                    output_path=str(paragraph_subtitle_path)
-                )
-            else:
-                print(f"段落字幕已存在: {paragraph_subtitle_path}")
-            
-            paragraph_subtitles.append(str(paragraph_subtitle_path))
-
-            # 5. 检查并生成段落视频
-            paragraph_video_path = para_dir / "paragraph_video.mp4"
-            
-            # 检查视频文件是否存在且有效
-            video_exists = paragraph_video_path.exists() and paragraph_video_path.stat().st_size > 0
-            # 检查视频时长是否与音频匹配（允许1秒误差）
-            if video_exists:
-                video_duration = get_audio_duration(str(paragraph_video_path))
-                duration_match = abs(video_duration - audio_duration) <= 1.0
-                
-                if duration_match:
-                    print(f"段落视频已存在且有效: {paragraph_video_path}")
-                    paragraph_videos.append(str(paragraph_video_path))
-                else:
-                    print(f"段落视频存在但时长不匹配 (视频: {video_duration:.2f}s, 音频: {audio_duration:.2f}s)，需要重新生成")
-                    video_exists = False
-            
-            if not video_exists:
-                print(f"生成段落视频: {para_title}")
-                video_path = create_paragraph_video_ffmpeg(
-                    audio_path=str(audio_path),
-                    image_paths=scene_files,
-                    output_path=str(paragraph_video_path)
-                )
-                if video_path:
-                    para_progress["video_done"] = True
-                    progress[para_key] = para_progress
-                    save_progress(progress_path, progress)
-                    paragraph_videos.append(video_path)
-                    print(f"段落视频生成成功: {para_title}")
-                else:
-                    print(f"段落视频生成失败: {para_title}")
-
-            # 6. 记录结果
-            all_results.append({
-                "chapter": chapter_key,
-                "para_title": para_title,
-                "audio": str(audio_path),
-                "images": scene_files,
-                "video": str(paragraph_video_path),
-                "paragraph_subtitle": str(paragraph_subtitle_path),
-                "scene_subtitles": scene_subtitles
-            })
-            progress[para_key] = para_progress
-            save_progress(progress_path, progress)
-
-        # 7. 生成章节字幕文件
-        chapter_subtitle_path = chapter_output_dir / "chapter_subtitle.srt"
-        
-        if paragraph_subtitles:
-            if not chapter_subtitle_path.exists():
-                print(f"生成章节字幕: {chapter_folder}")
-                merge_srt_files(paragraph_subtitles, str(chapter_subtitle_path))
-            else:
-                print(f"章节字幕已存在: {chapter_subtitle_path}")
-
-        # 8. 检查并生成本章节视频
-        chapter_video_path = chapter_output_dir / "chapter_video.mp4"
-        
-        if paragraph_videos:
-            # 检查章节视频是否需要重新生成
-            chapter_needs_update = True
-            if chapter_video_path.exists() and chapter_video_path.stat().st_size > 0:
-                # 获取所有段落视频的总时长
-                total_para_duration = sum(get_audio_duration(v) for v in paragraph_videos)
-                chapter_duration = get_audio_duration(str(chapter_video_path))
-                # 允许1秒的误差
-                if abs(total_para_duration - chapter_duration) <= 1.0:
-                    print(f"章节视频已存在且有效: {chapter_video_path}")
-                    chapter_needs_update = False
-                else:
-                    print(f"章节视频存在但时长不匹配 (视频: {chapter_duration:.2f}s, 预期: {total_para_duration:.2f}s)，需要重新生成")
-            
-            if chapter_needs_update:
-                print(f"生成章节视频: {chapter_folder}")
-                chapter_video_result = create_chapter_video_ffmpeg(
-                    paragraph_videos, 
-                    str(chapter_video_path),
-                    chapter_subtitle_path=str(chapter_subtitle_path) if chapter_subtitle_path.exists() else None
-                )
-                if chapter_video_result:
-                    print(f"章节视频生成成功: {chapter_video_result}")
-                    all_chapter_videos.append(chapter_video_result)
-                else:
-                    print(f"章节视频生成失败: {chapter_folder}")
-            else:
-                all_chapter_videos.append(str(chapter_video_path))
-        else:
-            print(f"没有有效的段落视频，跳过章节视频生成: {chapter_key}")
-    
     print(f"\n{'='*60}")
-    print(f"所有章节处理完成！共生成 {len(all_chapter_videos)} 个章节视频")
-    for video in all_chapter_videos:
+    print(f"开始处理 {chapter_info['章节号']}: {chapter_folder}")
+    print(f"包含 {len(scene_breakdown)} 个段落")
+    print(f"{'='*60}")
+
+    all_results = []
+    for para in scene_breakdown:
+        para_title = para["段落标题"]
+        para_num = para["序号"]
+        para_dir = chapter_output_dir / f"{para_num}-{para_title}"
+        para_dir.mkdir(parents=True, exist_ok=True)
+        para_key = f"{chapter_info['章节号']}-{para_title}"
+        para_progress = progress.get(para_key, {})
+
+        print(f"\n处理段落: {chapter_info['章节号']} - {para_title}")
+
+        # 2. 检查并生成段落音频
+        audio_path = para_dir / "audio.wav"
+        if audio_path.exists() and audio_path.stat().st_size > 0:
+            print(f"音频文件已存在且有效: {audio_path}")
+            audio_file = str(audio_path)
+        else:
+            print(f"生成音频文件: {audio_path}")
+            try:
+                audio_file = audio_gen.generate(
+                    text=para["场景文案"],
+                    type="paragraph",
+                    language="zh",
+                    output_path=str(audio_path)
+                )
+                para_progress["audio_done"] = True
+                save_progress(progress_path, progress)
+            except Exception as e:
+                print(f"音频生成失败: {para_title}，错误: {e}")
+                save_progress(progress_path, progress)
+                break
+
+        # 3. 检查并生成场景图片和字幕
+        scene_files = []
+        scene_subtitles = []
+        missing_scenes = []
+        scene_count = len(para["场景列表"])
+        total_duration = get_audio_duration(str(audio_path)) if Path(audio_path).exists() else 0
+        scene_duration = total_duration / scene_count if scene_count > 0 else 10.0
+
+        for i, scene in enumerate(para["场景列表"]):
+            scene_id = scene["场景编号"]
+            img_path = para_dir / f"scene_{scene_id}.jpg"
+            scene_subtitle_path = para_dir / f"scene_{scene_id}_subtitle.srt"
+
+            # 生成场景字幕
+            if not scene_subtitle_path.exists():
+                scene_start_time = i * scene_duration
+                print(f"生成场景字幕: scene_{scene_id}")
+                create_srt_subtitle(
+                    text=para["场景文案"],
+                    start_time=scene_start_time,
+                    duration=scene_duration,
+                    output_path=str(scene_subtitle_path)
+                )
+            else:
+                print(f"场景字幕已存在: scene_{scene_id}")
+
+            scene_subtitles.append(str(scene_subtitle_path))
+
+            if img_path.exists() and img_path.stat().st_size > 0:
+                print(f"场景图片已存在且有效: scene_{scene_id}.jpg")
+                scene_files.append(str(img_path))
+            else:
+                missing_scenes.append((scene, img_path))
+
+        # 生成缺失的场景图片
+        for scene, img_path in missing_scenes:
+            print(f"生成缺失的场景图片: scene_{scene['场景编号']}.jpg")
+            try:
+                if scene.get("场景图片url"):
+                    image_url = scene.get("场景图片url")
+                else:
+                    image_url = f"http://zhuluoji.cn-sh2.ufileos.com/test/{scene.get('主角', '主角')}.jpeg"
+                generate_image_from_prompt(
+                    output_path=str(img_path),
+                    access_key_id=volc_cred["access_key_id"],
+                    secret_access_key=volc_cred["secret_access_key"],
+                    prompt=scene["图片提示词"],
+                )
+                scene_files.append(str(img_path))
+                para_progress["scene_files"] = scene_files
+                progress[para_key] = para_progress
+                save_progress(progress_path, progress)
+            except Exception as e:
+                print(f"图片生成失败: scene_{scene['场景编号']}.jpg，错误: {e}")
+                save_progress(progress_path, progress)
+                return all_results  # 断点退出
+
+        # 4. 生成段落字幕文件
+        paragraph_subtitle_path = para_dir / "paragraph_subtitle.srt"
+        audio_duration = get_audio_duration(str(audio_path))
+        if not paragraph_subtitle_path.exists():
+            print(f"生成段落字幕: {para_title}")
+            create_srt_subtitle(
+                text=para["场景文案"],
+                start_time=0,
+                duration=audio_duration,
+                output_path=str(paragraph_subtitle_path)
+            )
+        else:
+            print(f"段落字幕已存在: {paragraph_subtitle_path}")
+        paragraph_subtitles.append(str(paragraph_subtitle_path))
+
+        # 5. 检查并生成段落视频
+        paragraph_video_path = para_dir / "paragraph_video.mp4"
+        video_exists = paragraph_video_path.exists() and paragraph_video_path.stat().st_size > 0
+        if video_exists:
+            video_duration = get_audio_duration(str(paragraph_video_path))
+            duration_match = abs(video_duration - audio_duration) <= 1.0
+            if duration_match:
+                print(f"段落视频已存在且有效: {paragraph_video_path}")
+                paragraph_videos.append(str(paragraph_video_path))
+            else:
+                print(f"段落视频存在但时长不匹配 (视频: {video_duration:.2f}s, 音频: {audio_duration:.2f}s)，需要重新生成")
+                video_exists = False
+        if not video_exists:
+            print(f"生成段落视频: {para_title}")
+            video_path = create_paragraph_video_ffmpeg(
+                audio_path=str(audio_path),
+                image_paths=scene_files,
+                output_path=str(paragraph_video_path)
+            )
+            if video_path:
+                para_progress["video_done"] = True
+                progress[para_key] = para_progress
+                save_progress(progress_path, progress)
+                paragraph_videos.append(video_path)
+                print(f"段落视频生成成功: {para_title}")
+            else:
+                print(f"段落视频生成失败: {para_title}")
+
+        # 6. 记录结果
+        all_results.append({
+            "chapter": chapter_info["章节号"],
+            "para_title": para_title,
+            "audio": str(audio_path),
+            "images": scene_files,
+            "video": str(paragraph_video_path),
+            "paragraph_subtitle": str(paragraph_subtitle_path),
+            "scene_subtitles": scene_subtitles
+        })
+        progress[para_key] = para_progress
+        save_progress(progress_path, progress)
+
+    # 7. 生成章节字幕文件
+    chapter_subtitle_path = chapter_output_dir / "chapter_subtitle.srt"
+    if paragraph_subtitles:
+        if not chapter_subtitle_path.exists():
+            print(f"生成章节字幕: {chapter_folder}")
+            merge_srt_files(paragraph_subtitles, str(chapter_subtitle_path))
+        else:
+            print(f"章节字幕已存在: {chapter_subtitle_path}")
+
+    # 8. 检查并生成本章节视频
+    chapter_video_path = chapter_output_dir / "chapter_video.mp4"
+    if paragraph_videos:
+        chapter_needs_update = True
+        if chapter_video_path.exists() and chapter_video_path.stat().st_size > 0:
+            total_para_duration = sum(get_audio_duration(v) for v in paragraph_videos)
+            chapter_duration = get_audio_duration(str(chapter_video_path))
+            if abs(total_para_duration - chapter_duration) <= 1.0:
+                print(f"章节视频已存在且有效: {chapter_video_path}")
+                chapter_needs_update = False
+            else:
+                print(f"章节视频存在但时长不匹配 (视频: {chapter_duration:.2f}s, 预期: {total_para_duration:.2f}s)，需要重新生成")
+        if chapter_needs_update:
+            print(f"生成章节视频: {chapter_folder}")
+            chapter_video_result = create_chapter_video_ffmpeg(
+                paragraph_videos, 
+                str(chapter_video_path),
+                chapter_subtitle_path=str(chapter_subtitle_path) if chapter_subtitle_path.exists() else None
+            )
+            if chapter_video_result:
+                print(f"章节视频生成成功: {chapter_video_result}")
+            else:
+                print(f"章节视频生成失败: {chapter_folder}")
+    else:
+        print(f"没有有效的段落视频，跳过章节视频生成: {chapter_info['章节号']}")
+
+    print(f"\n{'='*60}")
+    print(f"章节处理完成！共生成 {len(paragraph_videos)} 个段落视频")
+    for video in paragraph_videos:
         print(f"  - {video}")
     print(f"{'='*60}")
-    
+
     return all_results
 
-def process_all_chapters(chapters_dir="chapters", output_base="output"):
+def process_all_chapters(chapters_dir="chapters/processed", output_base="output"):
     """
     处理所有章节文件，生成视频
     """
     chapters_dir = Path(chapters_dir)
     chapter_files = [
-        "chapter1_breakdown.json",
-        "chapter2_breakdown.json",
-        "chapter3_breakdown.json",
-        "chapters4-8_breakdown.json",
-        "chapters9-13_breakdown.json",
-        "chapters14-18_breakdown.json",
-        "chapters19-20_breakdown.json",
-        "chapter21_breakdown.json",
-        "chapter22_breakdown.json",
-        "chapter23_breakdown.json",
-        "chapter24_breakdown.json",
-        "chapter25_breakdown.json",
-        "chapter26_breakdown.json",
-        "chapter27_breakdown.json",
-        "chapter28_breakdown.json",
-        "chapter29_breakdown.json",
-        "chapter30_breakdown.json",
-        "chapter31_breakdown.json",
-        "chapter32_breakdown.json",
-        "chapter33_breakdown.json",
-        "chapter34_breakdown.json",
-        "chapter35_breakdown.json",
-        "chapter36_breakdown.json",
-        "chapter37_breakdown.json",
-        "chapter38_breakdown.json",
-        "chapter39_breakdown.json",
-        "chapter40_breakdown.json"
+        "chapter_001_processed.json",
+        "chapter_002_processed.json",
+        "chapter_003_processed.json",
+        "chapter_004_processed.json",
+        "chapter_005_processed.json",
     ]
     
     all_results = []
