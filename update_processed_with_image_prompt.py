@@ -11,22 +11,20 @@ def update_processed_with_image_prompt(processed_path, image_path, output_path=N
     with open(image_path, 'r', encoding='utf-8') as f:
         image_data = json.load(f)
 
-    # 构建 (原场景编号, 完整图片提示词) 映射
+    # 构建 (原场景编号, 完整图片提示词) 映射，确保key为字符串
     image_prompt_map = {}
     for scene in image_data["场景提示词列表"]:
         scene_info = scene["场景基本信息"]
-        scene_id = scene_info["原场景编号"]
+        scene_id = str(scene_info["原场景编号"])
         image_prompt = scene["完整图片提示词"]
         image_prompt_map[scene_id] = image_prompt
 
-    # 遍历 processed_data，补充图片提示词
+    # 遍历 processed_data，强制补充图片提示词
     for para in processed_data["场景拆解"]:
         for scene in para["场景列表"]:
-            scene_id = scene["场景编号"]
-            if "图片提示词" not in scene or not scene["图片提示词"]:
-                # 只在原本没有图片提示词时补充
-                if scene_id in image_prompt_map:
-                    scene["图片提示词"] = image_prompt_map[scene_id]
+            scene_id = str(scene["场景编号"])
+            if scene_id in image_prompt_map:
+                scene["图片提示词"] = image_prompt_map[scene_id]
 
     # 保存
     if not output_path:
@@ -39,8 +37,11 @@ def update_processed_with_image_prompt(processed_path, image_path, output_path=N
 # update_processed_with_image_prompt('chapters/processed/chapter_001_processed.json', 'chapters/processed/chapter_001_image.json') 
 
 if __name__ == "__main__":
-    # update_processed_with_image_prompt('chapters/processed/chapter_001_processed.json', 'chapters/processed/chapter_001_image.json')
-    update_processed_with_image_prompt('chapters/processed/chapter_002_processed.json', 'chapters/processed/chapter_002_image.json')
-    update_processed_with_image_prompt('chapters/processed/chapter_003_processed.json', 'chapters/processed/chapter_003_image.json')
-    update_processed_with_image_prompt('chapters/processed/chapter_004_processed.json', 'chapters/processed/chapter_004_image.json')
-    update_processed_with_image_prompt('chapters/processed/chapter_005_processed.json', 'chapters/processed/chapter_005_image.json')
+    update_processed_with_image_prompt(
+        'chapters/processed/chapter_001_processed.json',
+        'chapters/processed/chapter_001_image.json'
+    )
+    # update_processed_with_image_prompt('chapters/processed/chapter_002_processed.json', 'chapters/processed/chapter_002_image.json')
+    # update_processed_with_image_prompt('chapters/processed/chapter_003_processed.json', 'chapters/processed/chapter_003_image.json')
+    # update_processed_with_image_prompt('chapters/processed/chapter_004_processed.json', 'chapters/processed/chapter_004_image.json')
+    # update_processed_with_image_prompt('chapters/processed/chapter_005_processed.json', 'chapters/processed/chapter_005_image.json')
