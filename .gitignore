@@ -43,4 +43,4 @@ Thumbs.db
 output/
 
 # 配置
-config/settings.yaml
+configs/settings.yaml
