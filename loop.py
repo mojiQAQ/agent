@@ -9,18 +9,238 @@ import subprocess
 import shlex
 import re
 
+def split_text_into_sentences(text):
+    """
+    智能分割文本为句子，支持中文标点符号，特别处理引号
+    """
+    import re
+    
+    # 清理文本：移除多余空白字符
+    text = re.sub(r'\s+', '', text.strip())
+    
+    if not text:
+        return []
+    
+    # 使用更复杂的正则表达式来处理引号和标点的组合
+    # 匹配：标点符号 + 可选的结束引号 + 可选的非引号字符（如逗号） + 可选的开始引号
+    pattern = r'([。！？…]+["""''）】〉》』】〕｝〗〙〛〉｠]*[，、]*)'
+    
+    # 分割文本，保留分隔符
+    parts = re.split(pattern, text)
+    
+    sentences = []
+    current_sentence = ""
+    
+    i = 0
+    while i < len(parts):
+        part = parts[i]
+        
+        if not part:
+            i += 1
+            continue
+        
+        # 检查是否是分割符（包含句号等）
+        if re.search(r'[。！？…]', part):
+            # 这是一个结束标点，加到当前句子并结束
+            current_sentence += part
+            
+            # 检查下一部分是否以开始引号开头
+            if i + 1 < len(parts) and parts[i + 1]:
+                next_part = parts[i + 1]
+                # 如果下一部分以开始引号开头，可能需要合并到下下个句子
+                if re.match(r'^["""''（【〈《『【〔｛〖〘〚〈｟]*', next_part):
+                    # 不做处理，让开始引号留在下一句
+                    pass
+            
+            if current_sentence.strip():
+                sentences.append(current_sentence.strip())
+            current_sentence = ""
+        else:
+            # 普通文本部分
+            current_sentence += part
+        
+        i += 1
+    
+    # 处理最后一部分
+    if current_sentence.strip():
+        sentences.append(current_sentence.strip())
+    
+    # 后处理：合并过短的句子和处理开头引号问题
+    final_sentences = []
+    i = 0
+    while i < len(sentences):
+        sentence = sentences[i]
+        
+        # 如果当前句子以开始引号开头，尝试与前一句合并
+        if (sentence.startswith(('"', '"', '（', '【')) and 
+            final_sentences and 
+            i > 0):  # 不是第一句
+            
+            # 检查前一句是否是一个完整的非引号句子
+            prev_sentence = final_sentences[-1]
+            
+            # 如果前一句不以引号结尾，且当前句以引号开头，很可能需要合并
+            if (not prev_sentence.endswith(('"', '"', '）', '】', '。', '！', '？')) or
+                len(sentence) <= 15):  # 或者当前句很短
+                # 与前一句合并
+                final_sentences[-1] += sentence
+            else:
+                final_sentences.append(sentence)
+        else:
+            final_sentences.append(sentence)
+        
+        i += 1
+    
+    # 再次处理：检查是否有引号配对问题
+    processed_sentences = []
+    for i, sentence in enumerate(final_sentences):
+        # 如果句子以引号开头但不是第一句，尝试特殊处理
+        if (sentence.startswith(('"', '"')) and 
+            i > 0 and 
+            processed_sentences):
+            
+            # 检查前面是否有未闭合的引号
+            prev_sentence = processed_sentences[-1]
+            if ('"' in prev_sentence or '"' in prev_sentence) and \
+               not (prev_sentence.endswith('"') or prev_sentence.endswith('"')):
+                # 前面有未闭合引号，与前一句合并
+                processed_sentences[-1] += sentence
+            else:
+                processed_sentences.append(sentence)
+        else:
+            processed_sentences.append(sentence)
+    
+    final_sentences = processed_sentences
+    
+    # 如果没有找到标点符号，或者句子太少，尝试按逗号等标点分割
+    if len(final_sentences) <= 1 and text:
+        # 首先尝试按逗号、顿号分割
+        comma_parts = re.split(r'([，、])', text)
+        comma_sentences = []
+        current_part = ""
+        
+        for i, part in enumerate(comma_parts):
+            current_part += part
+            if part in ['，', '、'] or len(current_part) >= 25:
+                # 检查下一部分是否以引号开头，如果是则合并
+                if i + 1 < len(comma_parts):
+                    next_part = comma_parts[i + 1]
+                    quote_pattern = r'^["""''）】〉》』】〕｝〗〙〛〉｠]*'
+                    quotes_match = re.match(quote_pattern, next_part)
+                    
+                    if quotes_match and quotes_match.group():
+                        # 将引号部分添加到当前部分
+                        quote_part = quotes_match.group()
+                        current_part += quote_part
+                        # 更新下一部分
+                        comma_parts[i + 1] = next_part[len(quote_part):]
+                
+                if current_part.strip():
+                    comma_sentences.append(current_part.strip())
+                current_part = ""
+        
+        # 添加最后一部分
+        if current_part.strip():
+            comma_sentences.append(current_part.strip())
+        
+        # 如果按逗号分割效果更好，使用它
+        if len(comma_sentences) > len(final_sentences) and len(comma_sentences) > 1:
+            final_sentences = comma_sentences
+        elif len(text) > 30:  # 如果还是太长，按长度强制分割
+            max_length = 30  # 每句最大字符数
+            parts = []
+            remaining = text
+            while remaining:
+                if len(remaining) <= max_length:
+                    parts.append(remaining)
+                    break
+                
+                # 在max_length范围内寻找合适的分割点
+                split_pos = max_length
+                for punct in ['，', '、', ' ', '的', '了', '在']:
+                    pos = remaining.rfind(punct, max_length // 2, max_length)
+                    if pos > 0:
+                        split_pos = pos + 1
+                        break
+                
+                parts.append(remaining[:split_pos])
+                remaining = remaining[split_pos:]
+            
+            final_sentences = [s.strip() for s in parts if s.strip()]
+        else:
+            final_sentences = [text] if text else []
+    
+    # 过滤掉空句子和过短的句子
+    final_sentences = [s for s in final_sentences if len(s.strip()) >= 2]
+    
+    return final_sentences if final_sentences else [text]
+
+def calculate_sentence_timing(sentences, total_duration, min_duration=1.5, max_duration=8.0):
+    """
+    根据句子长度和总时长计算每句字幕的显示时间
+    参数:
+    - sentences: 句子列表
+    - total_duration: 总音频时长（秒）
+    - min_duration: 每句最小显示时长（秒）
+    - max_duration: 每句最大显示时长（秒）
+    """
+    if not sentences:
+        return []
+    
+    # 计算每句的相对权重（基于字符数量）
+    sentence_lengths = [len(s) for s in sentences]
+    total_chars = sum(sentence_lengths)
+    
+    if total_chars == 0:
+        return [(0, total_duration / len(sentences)) for _ in sentences]
+    
+    # 根据权重分配时间
+    sentence_durations = []
+    for length in sentence_lengths:
+        # 基础时间分配（按字符比例）
+        base_duration = (length / total_chars) * total_duration
+        
+        # 根据句子长度调整：短句适当延长，长句适当缩短
+        if length <= 10:  # 短句
+            adjusted_duration = max(base_duration, min_duration)
+        elif length >= 40:  # 长句
+            adjusted_duration = min(base_duration, max_duration)
+        else:  # 中等长度句子
+            adjusted_duration = base_duration
+        
+        sentence_durations.append(adjusted_duration)
+    
+    # 标准化时间，确保总时长匹配
+    actual_total = sum(sentence_durations)
+    if actual_total > 0:
+        scale_factor = total_duration / actual_total
+        sentence_durations = [d * scale_factor for d in sentence_durations]
+    
+    # 计算每句的开始时间和持续时间
+    timing_info = []
+    current_time = 0
+    
+    for duration in sentence_durations:
+        timing_info.append((current_time, duration))
+        current_time += duration
+    
+    return timing_info
+
 def create_srt_subtitle(text, start_time=0, duration=None, output_path=None):
     """
-    创建SRT字幕文件
+    创建SRT字幕文件，支持按句子分割显示
     参数:
     - text: 字幕文本
     - start_time: 开始时间（秒）
     - duration: 持续时间（秒），如果为None则使用文本长度估算
     - output_path: 输出文件路径
     """
+    if not text or not text.strip():
+        return ""
+    
     if duration is None:
-        # 根据文本长度估算时间（平均每个字0.2秒，最少5秒）
-        duration = max(len(text) * 0.2, 5.0)
+        # 根据文本长度估算时间（平均每个字0.15秒，最少3秒）
+        duration = max(len(text) * 0.15, 3.0)
     
     def seconds_to_srt_time(seconds):
         """将秒转换为SRT时间格式 HH:MM:SS,mmm"""
@@ -30,29 +250,102 @@ def create_srt_subtitle(text, start_time=0, duration=None, output_path=None):
         milliseconds = int((seconds % 1) * 1000)
         return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
     
-    start_srt = seconds_to_srt_time(start_time)
-    end_srt = seconds_to_srt_time(start_time + duration)
+    # 分割文本为句子
+    sentences = split_text_into_sentences(text)
     
-    # 创建SRT内容
-    srt_content = f"1\n{start_srt} --> {end_srt}\n{text}\n\n"
+    # 如果只有一句话，使用原来的逻辑
+    if len(sentences) <= 1:
+        start_srt = seconds_to_srt_time(start_time)
+        end_srt = seconds_to_srt_time(start_time + duration)
+        srt_content = f"1\n{start_srt} --> {end_srt}\n{text}\n\n"
+    else:
+        # 计算每句的时间
+        timing_info = calculate_sentence_timing(sentences, duration)
+        
+        # 生成多条字幕
+        srt_content = ""
+        for i, (sentence, (sentence_start, sentence_duration)) in enumerate(zip(sentences, timing_info)):
+            subtitle_start = start_time + sentence_start
+            subtitle_end = subtitle_start + sentence_duration
+            
+            start_srt = seconds_to_srt_time(subtitle_start)
+            end_srt = seconds_to_srt_time(subtitle_end)
+            
+            srt_content += f"{i+1}\n{start_srt} --> {end_srt}\n{sentence}\n\n"
     
     if output_path:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(srt_content)
-        print(f"字幕文件已生成: {output_path}")
+        print(f"字幕文件已生成: {output_path} (包含 {len(sentences)} 条字幕)")
     
     return srt_content
 
+def parse_srt_file(srt_content):
+    """
+    解析SRT文件内容，返回字幕条目列表
+    返回格式：[(start_seconds, end_seconds, text), ...]
+    """
+    def srt_time_to_seconds(srt_time):
+        """将SRT时间格式转换为秒"""
+        parts = srt_time.replace(',', ':').split(':')
+        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]) + int(parts[3]) / 1000
+    
+    entries = []
+    lines = srt_content.strip().split('\n')
+    i = 0
+    
+    while i < len(lines):
+        # 跳过空行
+        if not lines[i].strip():
+            i += 1
+            continue
+        
+        # 跳过序号行
+        if lines[i].strip().isdigit():
+            i += 1
+            if i >= len(lines):
+                break
+        
+        # 解析时间行
+        if '-->' in lines[i]:
+            time_line = lines[i].strip()
+            times = time_line.split(' --> ')
+            start_time = srt_time_to_seconds(times[0].strip())
+            end_time = srt_time_to_seconds(times[1].strip())
+            
+            i += 1
+            
+            # 获取字幕文本（可能有多行）
+            subtitle_lines = []
+            while i < len(lines) and lines[i].strip():
+                subtitle_lines.append(lines[i])
+                i += 1
+            
+            subtitle_text = '\n'.join(subtitle_lines)
+            if subtitle_text.strip():
+                entries.append((start_time, end_time, subtitle_text.strip()))
+        else:
+            i += 1
+    
+    return entries
+
 def merge_srt_files(srt_files, output_path):
     """
-    合并多个SRT字幕文件
+    合并多个SRT字幕文件，支持多句字幕格式
     参数:
     - srt_files: SRT文件路径列表
     - output_path: 输出合并后的SRT文件路径
     """
-    merged_content = ""
-    subtitle_index = 1
-    current_time = 0.0
+    def seconds_to_srt_time(seconds):
+        """将秒转换为SRT时间格式"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        milliseconds = int((seconds % 1) * 1000)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
+    
+    all_entries = []
+    current_time_offset = 0.0
     
     for srt_file in srt_files:
         if not Path(srt_file).exists():
@@ -64,53 +357,37 @@ def merge_srt_files(srt_files, output_path):
         if not content:
             continue
         
-        # 解析SRT文件获取时长
-        lines = content.split('\n')
-        for i, line in enumerate(lines):
-            if '-->' in line:
-                # 解析时间行
-                times = line.split(' --> ')
-                start_time = times[0].strip()
-                end_time = times[1].strip()
-                
-                # 获取字幕文本
-                subtitle_text = ""
-                for j in range(i + 1, len(lines)):
-                    if lines[j].strip() == "":
-                        break
-                    subtitle_text += lines[j] + "\n"
-                subtitle_text = subtitle_text.strip()
-                
-                # 计算新的时间
-                def srt_time_to_seconds(srt_time):
-                    """将SRT时间格式转换为秒"""
-                    parts = srt_time.replace(',', ':').split(':')
-                    return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2]) + int(parts[3]) / 1000
-                
-                def seconds_to_srt_time(seconds):
-                    """将秒转换为SRT时间格式"""
-                    hours = int(seconds // 3600)
-                    minutes = int((seconds % 3600) // 60)
-                    secs = int(seconds % 60)
-                    milliseconds = int((seconds % 1) * 1000)
-                    return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
-                
-                original_duration = srt_time_to_seconds(end_time) - srt_time_to_seconds(start_time)
-                
-                new_start = seconds_to_srt_time(current_time)
-                new_end = seconds_to_srt_time(current_time + original_duration)
-                
-                # 添加到合并内容
-                merged_content += f"{subtitle_index}\n{new_start} --> {new_end}\n{subtitle_text}\n\n"
-                subtitle_index += 1
-                current_time += original_duration
-                break
+        # 解析当前SRT文件
+        entries = parse_srt_file(content)
+        
+        if not entries:
+            continue
+        
+        # 调整时间偏移
+        max_end_time = 0
+        for start_time, end_time, text in entries:
+            adjusted_start = start_time + current_time_offset
+            adjusted_end = end_time + current_time_offset
+            all_entries.append((adjusted_start, adjusted_end, text))
+            max_end_time = max(max_end_time, adjusted_end)
+        
+        # 更新时间偏移量
+        current_time_offset = max_end_time
+    
+    # 生成合并后的SRT内容
+    merged_content = ""
+    for i, (start_time, end_time, text) in enumerate(all_entries):
+        start_srt = seconds_to_srt_time(start_time)
+        end_srt = seconds_to_srt_time(end_time)
+        merged_content += f"{i+1}\n{start_srt} --> {end_srt}\n{text}\n\n"
     
     # 保存合并后的文件
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(merged_content)
     
-    print(f"合并字幕文件已生成: {output_path}")
+    total_count = len(all_entries)
+    total_duration = all_entries[-1][1] if all_entries else 0
+    print(f"合并字幕文件已生成: {output_path} (包含 {total_count} 条字幕, 总时长 {total_duration:.2f}秒)")
     return str(output_path)
 
 def get_random_camera_motion(frames):

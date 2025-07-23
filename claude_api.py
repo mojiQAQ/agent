@@ -10,8 +10,8 @@ from loguru import logger
 API_KEY = os.getenv("CLAUDE_API_KEY")
 API_URL = "https://globalai.vip/v1/chat/completions"
 MODEL = "claude-sonnet-4-20250514"
-SYSTEM_PROMPT_PATH = Path("chapters/prompt_change.md")
-CHAPTERS_DIR = Path("chapters/split_chapters")
+SYSTEM_PROMPT_PATH = Path("chapters/prompt_image.md")
+CHAPTERS_DIR = Path("chapters/processed")
 OUTPUT_DIR = Path("chapters/processed")
 MAX_RETRY = 1
 RETRY_INTERVAL = 10  # seconds
@@ -27,6 +27,35 @@ def call_claude_api(system_prompt, user_input):
         "Authorization": f"Bearer {API_KEY}",
         "content-type": "application/json"
     }
+
+    temp_json = """
+    请直接按照以下*格式*输出，不要做多余的对话，不要输出任何解释
+
+    {
+    "批次信息": {
+      "章节号": "第xx章",
+      "章节标题": "计划赶不上变化",
+      "处理场景数量": "16个场景",
+      "人物特征库版本": "v1.1",
+      "系统版本": "v3.0"
+    },
+    "场景提示词列表": [
+      {
+        "场景基本信息": {
+          "场景序号": 1,
+          "原场景编号": "1-1",
+          "场景名称": "会客室初次见面",
+          "对应段落": "神秘美女突然来访",
+          "爽文元素": ["神秘身份开场"],
+          "情绪强度": "好奇震撼"
+        },
+        "完整图片提示词": "现代写实动漫风格，anime style，冷色调，M国福克斯监狱会客室内部，白色墙壁监狱规章制度右上角监控摄像头左侧小窗户自然光冷白色调严肃感，金属会客桌占据中央干净整洁两把椅子相对黑色公文包访客登记簿，灰色水泥地面椅子腿金属反光高跟鞋帆布鞋对比，女主角陈若云28岁鹅蛋脸白皙透亮，深棕色大杏眼双眼皮聪慧坚定嘴角微扬职业友善，适中柳叶眉深棕色，小巧挺直精致鼻梁高挺微翘，适中嘴唇中等厚度，深棕色中长发微卷光泽顺滑偏分刘海优雅知性，白色职业衬衫黑色职业套裙黑色高跟鞋精致手表，位于画面左侧黄金分割点优雅端坐双手交叠桌面从容姿态，男主角周扬25岁方圆脸黄皮肤略显苍白，深黑色单凤眼双眼皮专注深邃震惊失神眉毛微扬薄唇微张惊讶，浓密剑眉深黑色，挺直鼻梁高挺立体，适中薄唇，深黑色短发略显凌乱粗糙无光泽无刘海额头露出，橙色短袖囚服橙色长裤囚服黑色帆布鞋，位于画面右侧边缘刚进入身体僵硬准备坐下"
+      }
+    ]
+    }
+    """
+
+
     dataSystem = {
         "model": MODEL,
         "max_tokens": 200000,
@@ -34,8 +63,8 @@ def call_claude_api(system_prompt, user_input):
         "stop": ["EOF"],
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "assistant", "content": "好的，我明白了。我将根据您输入的小说按照您提供的输出格式进行输出。并且不要缺少段落，保证生成的段落数量完整。"},
             {"role": "user", "content": user_input},
+            {"role": "assistant", "content": temp_json}
         ],
         "temperature": 0.7
     }
@@ -67,11 +96,11 @@ def main():
     system_prompt = load_system_prompt()
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    chapter_files = sorted(CHAPTERS_DIR.glob("chapter_*_detailed.txt"))
+    chapter_files = sorted(CHAPTERS_DIR.glob("chapter_*_processed.json"))
     logger.info(f"共检测到 {len(chapter_files)} 个章节文件。")
 
     for chapter_file in tqdm(chapter_files, desc="Processing chapters"):
-        output_file = OUTPUT_DIR / (chapter_file.stem.replace("_detailed", "") + "_processed.json")
+        output_file = OUTPUT_DIR / (chapter_file.stem.replace("_processed", "") + "_image.json")
         if output_file.exists():
             logger.info(f"{output_file} 已存在，跳过")
             continue  # 跳过已生成
@@ -86,7 +115,7 @@ def main():
                 json_obj = json.loads(result)
                 with open(output_file, "w", encoding="utf-8") as out_f:
                     logger.info(json_obj)
-                    json.dump(json_obj, out_f, ensure_ascii=False)
+                    json.dump(json_obj, out_f, ensure_ascii=False, indent=4)
             except Exception as e:
                 logger.error(f"解析JSON失败: {e}")
                 with open(output_file, "w", encoding="utf-8") as out_f:
