@@ -238,6 +238,9 @@ def create_srt_subtitle(text, start_time=0, duration=None, output_path=None):
     if not text or not text.strip():
         return ""
     
+    # 去除英文单引号和中文单引号
+    text = text.replace("'", "").replace("’", "")
+    
     if duration is None:
         # 根据文本长度估算时间（平均每个字0.15秒，最少3秒）
         duration = max(len(text) * 0.15, 3.0)
@@ -252,6 +255,8 @@ def create_srt_subtitle(text, start_time=0, duration=None, output_path=None):
     
     # 分割文本为句子
     sentences = split_text_into_sentences(text)
+    # 对每个句子也去除单引号
+    sentences = [s.replace("'", "").replace("’", "") for s in sentences]
     
     # 如果只有一句话，使用原来的逻辑
     if len(sentences) <= 1:
@@ -329,65 +334,59 @@ def parse_srt_file(srt_content):
     
     return entries
 
-def merge_srt_files(srt_files, output_path):
-    """
-    合并多个SRT字幕文件，支持多句字幕格式
-    参数:
-    - srt_files: SRT文件路径列表
-    - output_path: 输出合并后的SRT文件路径
-    """
+def merge_srt_files(srt_files, video_files, output_path):
+    '''
+    合并多个SRT字幕文件，严格按视频片段真实时长对齐字幕，避免累计误差。
+    srt_files: 字幕文件列表
+    video_files: 对应的视频文件列表（顺序必须一致）
+    '''
     def seconds_to_srt_time(seconds):
-        """将秒转换为SRT时间格式"""
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         secs = int(seconds % 60)
         milliseconds = int((seconds % 1) * 1000)
         return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
-    
+
     all_entries = []
     current_time_offset = 0.0
-    
-    for srt_file in srt_files:
-        if not Path(srt_file).exists():
+
+    for srt_file, video_file in zip(srt_files, video_files):
+        if not Path(srt_file).exists() or not Path(video_file).exists():
             continue
-            
+
         with open(srt_file, 'r', encoding='utf-8') as f:
             content = f.read().strip()
-        
         if not content:
             continue
-        
-        # 解析当前SRT文件
+
         entries = parse_srt_file(content)
-        
-        if not entries:
-            continue
-        
-        # 调整时间偏移
-        max_end_time = 0
+        video_duration = get_audio_duration(video_file)  # 用视频真实时长
+
+        # 计算当前字幕的总时长
+        if entries:
+            srt_duration = entries[-1][1]
+        else:
+            srt_duration = 0
+
+        # 时间缩放因子
+        scale = video_duration / srt_duration if srt_duration > 0 else 1.0
+
         for start_time, end_time, text in entries:
-            adjusted_start = start_time + current_time_offset
-            adjusted_end = end_time + current_time_offset
+            adjusted_start = current_time_offset + start_time * scale
+            adjusted_end = current_time_offset + end_time * scale
             all_entries.append((adjusted_start, adjusted_end, text))
-            max_end_time = max(max_end_time, adjusted_end)
-        
-        # 更新时间偏移量
-        current_time_offset = max_end_time
-    
+        current_time_offset += video_duration
+
     # 生成合并后的SRT内容
     merged_content = ""
     for i, (start_time, end_time, text) in enumerate(all_entries):
         start_srt = seconds_to_srt_time(start_time)
         end_srt = seconds_to_srt_time(end_time)
         merged_content += f"{i+1}\n{start_srt} --> {end_srt}\n{text}\n\n"
-    
-    # 保存合并后的文件
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(merged_content)
-    
-    total_count = len(all_entries)
-    total_duration = all_entries[-1][1] if all_entries else 0
-    print(f"合并字幕文件已生成: {output_path} (包含 {total_count} 条字幕, 总时长 {total_duration:.2f}秒)")
+    print(f"合并字幕文件已生成: {output_path} (严格对齐视频时长)")
     return str(output_path)
 
 def get_random_camera_motion(frames):
@@ -850,7 +849,6 @@ def create_complete_movie(output_base="output", movie_output_path="output/comple
     
     # 按章节名称排序（尝试按数字排序）
     def sort_key(name):
-        # 尝试提取章节号进行数字排序
         import re
         match = re.search(r'(\d+)', name)
         if match:
@@ -866,6 +864,7 @@ def create_complete_movie(output_base="output", movie_output_path="output/comple
     
     # 过滤掉空的字幕文件
     chapter_subtitles = [sub for sub in chapter_subtitles if sub and Path(sub).exists()]
+    chapter_videos_for_subs = [v for v, s in zip(chapter_videos, chapter_subtitles) if s and Path(s).exists()]
     
     print(f"找到 {len(chapter_videos)} 个章节视频，按顺序:")
     for i, (dir_name, video_path) in enumerate(zip(chapter_dirs, chapter_videos)):
@@ -874,10 +873,10 @@ def create_complete_movie(output_base="output", movie_output_path="output/comple
     
     # 生成完整字幕文件
     complete_subtitle_path = None
-    if chapter_subtitles:
+    if chapter_subtitles and chapter_videos_for_subs:
         complete_subtitle_path = Path(movie_output_path).parent / "complete_movie_subtitle.srt"
         print(f"合并章节字幕到: {complete_subtitle_path}")
-        merge_srt_files(list(chapter_subtitles), str(complete_subtitle_path))
+        merge_srt_files(list(chapter_subtitles), list(chapter_videos_for_subs), str(complete_subtitle_path))
     
     # 生成完整视频
     print(f"开始生成完整电影: {movie_output_path}")
@@ -1083,7 +1082,7 @@ def process_chapter(chapter_json_path, output_base="output"):
     if paragraph_subtitles:
         if not chapter_subtitle_path.exists():
             print(f"生成章节字幕: {chapter_folder}")
-            merge_srt_files(paragraph_subtitles, str(chapter_subtitle_path))
+            merge_srt_files(paragraph_subtitles, paragraph_videos, str(chapter_subtitle_path))
         else:
             print(f"章节字幕已存在: {chapter_subtitle_path}")
 
@@ -1132,6 +1131,41 @@ def process_all_chapters(chapters_dir="chapters/processed", output_base="output"
         "chapter_003_processed.json",
         "chapter_004_processed.json",
         "chapter_005_processed.json",
+        "chapter_006_processed.json",
+        "chapter_007_processed.json",
+        "chapter_008_processed.json",
+        "chapter_009_processed.json",
+        "chapter_010_processed.json",
+        "chapter_011_processed.json",
+        "chapter_012_processed.json",
+        "chapter_013_processed.json",
+        "chapter_014_processed.json",
+        "chapter_015_processed.json",
+        "chapter_016_processed.json",
+        "chapter_017_processed.json",
+        "chapter_018_processed.json",
+        "chapter_019_processed.json",
+        "chapter_020_processed.json",
+        "chapter_021_processed.json",
+        "chapter_022_processed.json",
+        "chapter_023_processed.json",
+        "chapter_024_processed.json",
+        "chapter_025_processed.json",
+        "chapter_026_processed.json",
+        "chapter_027_processed.json",
+        "chapter_028_processed.json",
+        "chapter_029_processed.json",
+        "chapter_030_processed.json",
+        "chapter_031_processed.json",
+        "chapter_032_processed.json",
+        "chapter_033_processed.json",
+        "chapter_034_processed.json",
+        "chapter_035_processed.json",
+        "chapter_036_processed.json",
+        "chapter_037_processed.json",
+        "chapter_038_processed.json",
+        "chapter_039_processed.json",
+        "chapter_040_processed.json",
     ]
     
     all_results = []
